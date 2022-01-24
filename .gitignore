@@ -1,0 +1,43 @@
+!.env.*
+!.git*
+
+# Product
+target
+*.class
+*.[jw]ar
+*.[oa]
+*.so
+*.dylib
+*.luac
+*.pyc
+*.log
+yarn.lock
+
+# Development
+*.iml
+rebel.xml
+tags
+
+# VCS
+.svn
+.git
+.hg
+CVS
+
+# macOS
+.DS_Store
+Icon
+
+# Directory
+/build
+/home
+/log
+node_modules
+/out
+/output
+/zoo
+/lib
+/react-frontend/dist
+
+# Gingkoo
+**/com/gingkoo/test

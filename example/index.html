@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>日期时间选择器</title>
+    <link rel="stylesheet" href="./datepicker-min.css">
+    <script src="./jquery.min.js"></script>
+    <script src="./datepicker-min.js"></script>
+</head>
+<style>
+    *{padding: 0; margin: 0; box-sizing: border-box;}
+</style>
+<body>
+  
+    <div style="margin-top: 100px; margin-left: 100px;">
+        <input type="text" name="date1" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD"  value="2022-01-19" width="150" aa="1">
+        <input type="text" name="date1" disabled value="" aa="2">
+        <input type="text" name="ww-date" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD" value="2022-01-19,2022-01-22" width="216">
+        <input type="text" name="ww-date" width="300">
+    </div>
+</body>
+
+<script>
+
+    $('[name=date1]').datePicker({
+        value: "",
+        format: 'YYYY/MM/DD',
+        change: function(date){
+            console.log(`⭐️ ~ date`, date)
+        }
+    })
+    $('[name=ww-date]').rangePicker({
+        value: [],
+        format: 'YYYY-MM-DD',
+        change: function(date){
+            console.log(`⭐️ ~ date`, date)
+        }
+    })
+
+</script>
+
+</html>

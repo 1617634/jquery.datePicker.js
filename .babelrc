@@ -1,0 +1,18 @@
+{
+  "presets": [
+    [ "@babel/preset-env"
+      ,{
+        "targets": {
+          "browsers": ["ie >= 11"]
+        },
+        "useBuiltIns": "entry",
+        "modules": false,
+        "corejs": 3 
+      }
+    ]
+  ],
+  "plugins": ["transform-remove-strict-mode"],
+  "parserOpts": {
+    "strictMode": false
+  }
+}
