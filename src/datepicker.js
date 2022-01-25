@@ -30,34 +30,6 @@ $(function (window, $) {
       }
       return {x:0, y:0};
     },
-
-    // 获取元素距离浏览器顶部的距离
-    getElementTop: function (elem){
-      var elemTop = elem.offsetTop;
-      var pElem = elem.offsetParent;
-      while (pElem != null) {
-        elemTop += pElem.offsetTop;
-        if(pElem.style.transform){
-          elemTop += this.getComputedTranslate(pElem).y
-        }
-        pElem = pElem.offsetParent;
-      }
-      return elemTop;
-    },
-
-    // 获取元素距离浏览器左侧的距离
-    getElementLeft: function (elem){
-      var elemLeft = elem.offsetLeft;
-      var pElem = elem.offsetParent;
-      while (pElem != null) {
-        elemLeft += pElem.offsetLeft;
-        if(pElem.style.transform){
-          elemLeft += this.getComputedTranslate(pElem).x
-        }
-        pElem = pElem.offsetParent;
-      }
-      return elemLeft;
-    },
     padZero: function(direction, str, num, pad){
       pad = pad? pad: '0';
       str = typeof str !== 'string'? str.toString(): str;
@@ -218,6 +190,7 @@ $(function (window, $) {
     this.calendar = null;
     this.weekText = ['日', '一', '二', '三', '四', '五', '六'];
     this.datePickerWidth = 245;
+    this.show = false;
     this.init();
   }
 
@@ -406,7 +379,7 @@ $(function (window, $) {
       `
     },
     renderCalendar: function(pos){
-
+      this.show = true;
       if(!this.calendar){
         this.calendar = $('<div style="position: absolute; top: 0px; left: 0px; width: 100%;"></div>')
         $('body').append(this.calendar)
@@ -424,6 +397,7 @@ $(function (window, $) {
         </div>`)
         this.bindCalendarEvent()// 绑定弹框 元素事件
       }else{
+        this.calendar.find('.ww-picker-dropdown').css('top', pos.y+'px').css('left', pos.x+'px')
         this.showCalendar()
       }
 
@@ -437,9 +411,25 @@ $(function (window, $) {
       this.calendar && this.calendar.find('.ww-picker-dropdown').removeClass('ww-picker-dropdown-hidden')
     },
     hideCalendar: function(){
+      this.show = false;
       this.calendar && this.calendar.find('.ww-picker-dropdown').addClass('ww-picker-dropdown-hidden')
     },
-
+    calcCalendarPosition: function(){
+      var y = this.inputElement.offset().top
+      var x = this.inputElement.offset().left
+      var winWidth = helper.getWindowSize().width;
+      if(winWidth - x < this.datePickerWidth){// 默认左边对齐，如果右边距离不够则右边对齐
+        var inputWidth = this.inputElement.width();
+        if(inputWidth < this.datePickerWidth){
+          x = x - (this.datePickerWidth - inputWidth);
+        }
+      }
+      x = x<0? 0: x;
+      return {
+        x: x, 
+        y: y + this.inputElement.height()// 这个5px是故意留的间距
+      }
+    },
     setInputVal: function(value){
       this.inputElement.find('input').val(value)
     },
@@ -480,6 +470,12 @@ $(function (window, $) {
           that.hideCalendar()
         }
       })
+      $(document).bind('mousewheel', function() { 
+        if(that.show){
+          var pos = that.calcCalendarPosition()
+          that.calendar.find('.ww-picker-dropdown').css('top', pos.y+'px').css('left', pos.x+'px')
+        }
+      });
     },
     bindInputEvent: function(){
       var that = this;
@@ -487,22 +483,7 @@ $(function (window, $) {
         that.inputElement.addClass('ww-picker-focused')
         if(that.calendar && that.hasShowCalendar())return false;
 
-        var y = helper.getElementTop(that.inputElement.get(0))
-        var x = helper.getElementLeft(that.inputElement.get(0))
-
-        var winWidth = helper.getWindowSize().width;
-        if(winWidth - x < that.datePickerWidth){// 默认左边对齐，如果右边距离不够则右边对齐
-          var inputWidth = that.inputElement.width();
-          if(inputWidth < that.datePickerWidth){
-            x = x - (that.datePickerWidth - inputWidth);
-          }
-        }
-        x = x<0? 0: x;
-
-        that.renderCalendar({
-          x: x, 
-          y: y + that.inputElement.height()// 这个5px是故意留的间距
-        })
+        that.renderCalendar(that.calcCalendarPosition())
       })
 
       this.inputElement.find('input').bind('input', function(e){
@@ -606,6 +587,7 @@ $(function (window, $) {
     this.calendar = null;
     this.weekText = ['日', '一', '二', '三', '四', '五', '六'];
     this.rangePickerWidth = 488;
+    this.show = false;
     this.init();
   }
 
@@ -643,11 +625,11 @@ $(function (window, $) {
       var flag = this.value.filter(function(time){ return dateUtil.checkTime(time)}).length === 2;
       this.options.container.after(`<div class="ww-picker ww-picker-range" style="${style}">
         <div class="ww-picker-input">
-          <input placeholder="开始日期" size="12" autocomplete="off" value="${flag? dateUtil.formatTime(this.options.format, this.value[0]): ''}">
+          <input placeholder="开始日期" size="12" data-index="0" autocomplete="off" value="${flag? dateUtil.formatTime(this.options.format, this.value[0]): ''}">
         </div>
         <div class="ww-picker-range-separator">${this.renderToIcon()}</div>
         <div class="ww-picker-input">
-          <input placeholder="结束日期" size="12" autocomplete="off" value="${flag? dateUtil.formatTime(this.options.format, this.value[1]): ''}">
+          <input placeholder="结束日期" size="12" data-index="1" autocomplete="off" value="${flag? dateUtil.formatTime(this.options.format, this.value[1]): ''}">
         </div>
         ${this.renderCalendarIcon()}
         ${flag? this.renderCloseIcon(): ''}
@@ -856,7 +838,7 @@ $(function (window, $) {
       `
     },
     renderCalendar: function(pos){
-
+      this.show = true;
       if(!this.calendar){
         this.calendar = $('<div style="position: absolute; top: 0px; left: 0px; width: 100%;"></div>')
         $('body').append(this.calendar)
@@ -876,6 +858,7 @@ $(function (window, $) {
         </div>`)
         this.bindCalendarEvent()// 绑定弹框 元素事件
       }else{
+        this.calendar.find('.ww-picker-dropdown').css('top', pos.y+'px').css('left', pos.x+'px')
         this.showCalendar()
       }
 
@@ -890,9 +873,26 @@ $(function (window, $) {
       this.calendar && this.calendar.find('.ww-picker-dropdown').removeClass('ww-picker-dropdown-hidden')
     },
     hideCalendar: function(){
+      this.show = false;
       this.calendar && this.calendar.find('.ww-picker-dropdown').addClass('ww-picker-dropdown-hidden')
     },
+    calcCalendarPosition: function(){
+      var y = this.inputElement.offset().top
+      var x = this.inputElement.offset().left
 
+      var winWidth = helper.getWindowSize().width;
+      if(winWidth - x < this.rangePickerWidth){// 默认左边对齐，如果右边距离不够则右边对齐
+        var inputWidth = this.inputElement.width();
+        if(inputWidth < this.rangePickerWidth){
+          x = x - (this.rangePickerWidth - inputWidth);
+        }
+      }
+      x = x<0? 0: x;
+      return {
+        x: x, 
+        y: y + this.inputElement.height()// 这个5px是故意留的间距
+      }
+    },
     setInputVal: function(value){
       if(value.length === 2){
         this.inputElement.find('input').eq(0).val(value[0])
@@ -946,33 +946,28 @@ $(function (window, $) {
           that.hideCalendar()
         }
       })
+      $(document).bind('mousewheel', function() { 
+        if(that.show){
+          var pos = that.calcCalendarPosition()
+          that.calendar.find('.ww-picker-dropdown').css('top', pos.y+'px').css('left', pos.x+'px')
+        }
+      });
     },
+    
     bindInputEvent: function(){
       var that = this;
       this.inputElement.find('input').focus(function(){
         that.inputElement.addClass('ww-picker-focused')
         if(that.calendar && that.hasShowCalendar())return false;
 
-        var y = helper.getElementTop(that.inputElement.get(0))
-        var x = helper.getElementLeft(that.inputElement.get(0))
-
-        var winWidth = helper.getWindowSize().width;
-        if(winWidth - x < that.rangePickerWidth){// 默认左边对齐，如果右边距离不够则右边对齐
-          var inputWidth = that.inputElement.width();
-          if(inputWidth < that.rangePickerWidth){
-            x = x - (that.rangePickerWidth - inputWidth);
-          }
-        }
-        x = x<0? 0: x;
-
-        that.renderCalendar({
-          x: x, 
-          y: y + that.inputElement.height()// 这个5px是故意留的间距
-        })
+        that.renderCalendar(that.calcCalendarPosition())
       })
 
       this.inputElement.find('input').bind('input', function(e){
-        // var val = e.target.value || ''
+        // var val = $(this).val()
+        // var index = $(this).data('index')
+        // console.log(`⭐️ ~ index`, index)
+        // console.log(`⭐️ ~ val`, val)
         // if(dateUtil.checkTime(val)){
         //   val = dateUtil.formatTime('YYYYMMDD', val);
         //   e.target.value = dateUtil.formatTime(that.options.format, val);
