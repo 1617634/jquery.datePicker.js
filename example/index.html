@@ -6,20 +6,29 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日期时间选择器</title>
-    <link rel="stylesheet" href="./datepicker-min.css">
+    <link rel="stylesheet" href="../src/datepicker.css">
     <script src="./jquery.min.js"></script>
-    <script src="./datepicker-min.js"></script>
+    <script src="../src/datepicker.js"></script>
 </head>
 <style>
     *{padding: 0; margin: 0; box-sizing: border-box;}
+    .box{
+        margin-top: 100px;
+        height: 300px;
+        overflow-y: auto;
+
+    }
+
 </style>
 <body>
-  
-    <div style="margin-top: 100px; margin-left: 100px;">
-        <input type="text" name="date1" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD"  value="2022-01-19" width="150" aa="1">
-        <input type="text" name="date1" disabled value="" aa="2">
-        <input type="text" name="ww-date" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD" value="2022-01-19,2022-01-22" width="216">
-        <input type="text" name="ww-date" width="300">
+    
+    <div class="box">
+        <div style="padding-top: 200px; margin-left: 100px; height: 1000px">
+            <input type="text" name="date1" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD"  value="2022-01-19" width="150" aa="1">
+            <input type="text" name="date1" disabled value="" aa="2">
+            <input type="text" name="ww-date" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD" value="2022-01-19,2022-01-22" width="216">
+            <input type="text" name="ww-date" width="300">
+        </div>
     </div>
 </body>
 

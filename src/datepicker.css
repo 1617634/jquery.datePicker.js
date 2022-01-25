@@ -127,15 +127,15 @@
 }
 
 .ww-picker:hover, .ww-picker-focused {
-    border-color: #40a9ff;
+    border-color: #40a9ff !important;
     border-right-width: 1px !important;
 }
 
 .ww-picker-focused {
-    border-color: #40a9ff;
+    border-color: #40a9ff !important;
     border-right-width: 1px !important;
     outline: 0;
-    box-shadow: 0 0 0 2px rgb(24 144 255 / 20%);
+    box-shadow: 0 0 0 2px rgba(24,144,255,.2);
 }
 
 /* 弹框 */
@@ -292,6 +292,7 @@
     position: relative;
     min-width: 24px;
     font-weight: 400;
+    text-align: center;
 }
 
 .ww-picker-cell {

@@ -208,6 +208,7 @@ $(function (window, $) {
       inputFormat: 'YYYYMMDD',// 输出格式
       value: '',// 默认值
       width: '',// 宽度
+      style: '',
       disabled: false,// 是否禁用
       change: function(){},
     }
@@ -241,6 +242,9 @@ $(function (window, $) {
       var style = ''
       if(/^\d+$/.test(this.options.width)){
         style = 'width: '+ this.options.width + 'px;';
+      }
+      if(this.options.style){
+        style += this.options.style
       }
       this.options.container.after(`<div class="ww-picker" style="${style}">
         <div class="ww-picker-input">
@@ -583,6 +587,7 @@ $(function (window, $) {
       inputFormat: 'YYYYMMDD',// 输出格式
       value: [],// 默认值
       width: '',// 宽度
+      style: '',
       disabled: false,// 是否禁用
       change: function(){},
     }
@@ -630,6 +635,9 @@ $(function (window, $) {
       var style = ''
       if(/^\d+$/.test(this.options.width)){
         style = 'width: '+ this.options.width + 'px;';
+      }
+      if(this.options.style){
+        style += this.options.style
       }
 
       var flag = this.value.filter(function(time){ return dateUtil.checkTime(time)}).length === 2;
@@ -889,6 +897,9 @@ $(function (window, $) {
       if(value.length === 2){
         this.inputElement.find('input').eq(0).val(value[0])
         this.inputElement.find('input').eq(1).val(value[1])
+      }else{
+        this.inputElement.find('input').eq(0).val('')
+        this.inputElement.find('input').eq(1).val('')
       }
     },
     onchange: function(value){
@@ -980,7 +991,7 @@ $(function (window, $) {
       })
 
       this.inputElement.delegate('.ww-picker-clear', 'click', function(){
-        // that.onchange('')
+        that.onchange([])
       })
     },
     bindCalendarEvent: function(){
@@ -1112,6 +1123,7 @@ $(function (window, $) {
           var that = $(this);
 
           opt.value = that.attr('value') || options.value;
+          opt.style = that.attr('style') || '';
           opt.format = that.attr('format') || options.format;
           opt.inputFormat = that.attr('inputFormat') || options.inputFormat;
           opt.width = that.attr('width') || options.width;
@@ -1131,6 +1143,7 @@ $(function (window, $) {
           value = Object.prototype.toString.call(value) === '[object Array]'? value: [];
 
           opt.value = value;
+          opt.style = that.attr('style') || '';
           opt.format = that.attr('format') || options.format;
           opt.inputFormat = that.attr('inputFormat') || options.inputFormat;
           opt.width = that.attr('width') || options.width;
