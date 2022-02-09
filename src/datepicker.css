@@ -376,6 +376,7 @@
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
+    box-sizing: border-box;
 }
 .ww-picker-today-btn, .ww-picker-quick-btn {
     color: #1890ff;
