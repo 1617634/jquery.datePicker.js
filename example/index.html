@@ -24,7 +24,7 @@
     
     <div class="box">
         <div style="padding-top: 200px; margin-left: 100px; height: 1000px">
-            <input type="text" name="date1" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD"  value="2022-01-19" width="150" aa="1">
+            <input type="text" name="date1" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD"  value="2022-01-19" width="150" aa="1" quicks="none">
             <input type="text" name="date1" disabled value="" aa="2">
             <input type="text" name="ww-date" format="YYYY-MM-DD" inputFormat="YYYY-MM-DD" value="2022-01-19,2022-01-22" width="216">
             <input type="text" name="ww-date" width="300">
@@ -38,6 +38,15 @@
     $('[name=date1]').datePicker({
         value: "",
         format: 'YYYY/MM/DD',
+        quicks: [
+            {
+                name: '快捷日期',
+                list: ["20211130", "20221130",
+                "20231130", "20241130",
+                "20251130", "20261130",
+                "20271130"],
+            }
+        ],
         change: function(date){
             console.log(`⭐️ ~ date`, date)
         }

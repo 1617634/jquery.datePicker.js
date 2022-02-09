@@ -181,10 +181,14 @@
     border-radius: 0;
 }
 
-.ww-picker-date-panel {
+.ww-picker-decade-panel, .ww-picker-year-panel, .ww-picker-quarter-panel, .ww-picker-month-panel, .ww-picker-week-panel, .ww-picker-date-panel, .ww-picker-time-panel, .ww-picker-quick-panel {
     display: flex;
     flex-direction: column;
     width: 244px;
+}
+
+.ww-picker-decade-panel .ww-picker-content, .ww-picker-year-panel .ww-picker-content, .ww-picker-quarter-panel .ww-picker-content, .ww-picker-month-panel .ww-picker-content, .ww-picker-quick-panel .ww-picker-content {
+    height: 192px;
 }
 
 .ww-picker-header {
@@ -258,6 +262,10 @@
 .ww-picker-header-view button {
     color: inherit;
     font-weight: inherit;
+    font-size: 12px;
+}
+.ww-picker-header-view button:hover {
+    color: #1890ff;
 }
 .ww-picker-header > button:not(:disabled):hover {
     color: rgba(0, 0, 0, 0.85);
@@ -363,7 +371,12 @@
 .ww-picker-panel .ww-picker-footer {
     border-top: 1px solid #f0f0f0;
 }
-.ww-picker-today-btn {
+.ww-picker-panel .ww-picker-footer.ww-picker-footer-space-between {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+.ww-picker-today-btn, .ww-picker-quick-btn {
     color: #1890ff;
     touch-action: manipulation;
     text-decoration: none;
@@ -374,10 +387,23 @@
     background: transparent;
 }
 
-.ww-picker-today-btn:hover {
+.ww-picker-today-btn:hover, .ww-picker-quick-btn:hover {
     color: #40a9ff;
     text-decoration: none;
     outline: 0;
+}
+
+.ww-picker-year-panel .ww-picker-cell-inner, .ww-picker-quarter-panel .ww-picker-cell-inner, .ww-picker-month-panel .ww-picker-cell-inner {
+    width: 60px;
+}
+.ww-picker-decade-panel .ww-picker-cell-inner, .ww-picker-year-panel .ww-picker-cell-inner, .ww-picker-quarter-panel .ww-picker-cell-inner, .ww-picker-month-panel .ww-picker-cell-inner {
+    padding: 0 4px;
+}
+.ww-picker-decade-panel .ww-picker-cell-inner {
+    padding: 0 2px;
+}
+.ww-picker-quick-panel .ww-picker-cell-inner {
+    padding: 0 2px;
 }
 
 /* 日期范围 */
@@ -528,3 +554,6 @@ tr > .ww-picker-cell-in-view.ww-picker-cell-range-hover:first-child::after,
     right: 0;
     left: 2px;
 }
+
+
+/* 弹框选择 */
