@@ -257,6 +257,7 @@
     flex: auto;
     font-weight: 500;
     line-height: 32px;
+    text-align: center;
 }
 
 .ww-picker-header-view button {

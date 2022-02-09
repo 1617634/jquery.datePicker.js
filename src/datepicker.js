@@ -178,268 +178,7 @@ $(
       },
     };
 
-    // 日期选择器
-    function DatePicker(options) {
-      this.options = {
-        container: null, // 容器
-        format: "YYYY-MM-DD", // 展示格式
-        inputFormat: "YYYYMMDD", // 输出格式
-        value: "", // 默认值
-        width: "", // 宽度
-        style: "",
-        quicks: [], // 快捷选择
-        disabled: false, // 是否禁用
-        change: function () {},
-      };
-
-      this.options = $.extend({}, this.options, options);
-      this.value = dateUtil.formatTime("YYYYMMDD", this.options.value || "");
-      (this.displayValue = this.setDisplayValue(this.value)), // 日历显示月份用的 格式：{year: number, month: number}
-        (this.calendar = null);
-      this.weekText = ["日", "一", "二", "三", "四", "五", "六"];
-      this.datePickerWidth = 245;
-      this.show = false;
-      /**
-       * showType类型有以下五种
-       *
-       * date  正常选择日期
-       * year   年份选择
-       * manyYear 更多年份选择
-       * month 月份选择
-       * quick  快捷选择
-       */
-      this.showType = "date";
-      this.init();
-    }
-
-    DatePicker.prototype = {
-      init: function () {
-        // 初始化
-        this.initElement(); // 初始化元素
-        this.bindEvent(); // 绑定事件
-      },
-
-      setDisplayValue(val) {
-        let displayValue = {};
-        if (val) {
-          displayValue = {
-            year: +val.slice(0, 4),
-            month: +val.slice(4, 6),
-          };
-        } else {
-          var curMonth = dateUtil.today();
-          displayValue = curMonth;
-        }
-        return displayValue;
-      },
-      renderCalendarIcon: function () {
-        return `<span class="ww-picker-suffix"><span role="img" aria-label="calendar" class="anticon">
-      <svg viewBox="64 64 896 896" focusable="false" data-icon="calendar" width="1em" height="1em" fill="currentColor" aria-hidden="true">
-      <path d="M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z"></path></svg>
-      </span></span>`;
-      },
-      renderCloseIcon: function () {
-        return `<span class="ww-picker-clear" role="button"><span role="img" aria-label="close-circle" class="anticon">
-      <svg viewBox="64 64 896 896" focusable="false" data-icon="close-circle" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm165.4 618.2l-66-.3L512 563.4l-99.3 118.4-66.1.3c-4.4 0-8-3.5-8-8 0-1.9.7-3.7 1.9-5.2l130.1-155L340.5 359a8.32 8.32 0 01-1.9-5.2c0-4.4 3.6-8 8-8l66.1.3L512 464.6l99.3-118.4 66-.3c4.4 0 8 3.5 8 8 0 1.9-.7 3.7-1.9 5.2L553.5 514l130 155c1.2 1.5 1.9 3.3 1.9 5.2 0 4.4-3.6 8-8 8z"></path></svg>
-      </span></span>`;
-      },
-      initElement: function () {
-        // 初始化元素
-        this.options.container.addClass("ww-datepicker-hidden-accessible");
-        var style = "";
-        if (/^\d+$/.test(this.options.width)) {
-          style = "width: " + this.options.width + "px;";
-        }
-        if (this.options.style) {
-          style += this.options.style;
-        }
-        this.options.container.after(`<div class="ww-picker" style="${style}">
-        <div class="ww-picker-input">
-          <input placeholder="请选择日期" size="12" autocomplete="off" value="${dateUtil.formatTime(
-            this.options.format,
-            this.value
-          )}">
-          ${this.renderCalendarIcon()}
-          ${this.value ? this.renderCloseIcon() : ""}
-        </div>
-      </div>`);
-
-        this.inputElement = this.options.container.next();
-      },
-
-      renderCalendarHeader(date) {
-        return `
-        <div class="ww-picker-header" data-year="${date.year}" data-month="${date.month}">
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-super-prev-btn" operator="-" unit="year">
-            <span class="ww-picker-super-prev-icon"></span>
-          </button>
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-prev-btn" operator="-" unit="month">
-            <span class="ww-picker-prev-icon"></span>
-          </button>
-          <div class="ww-picker-header-view">
-            <button type="button" tabindex="-1" class="ww-picker-year-btn" data-year="${date.year}">${date.year}年</button>
-            <button type="button" tabindex="-1" class="ww-picker-month-btn" data-year="${date.year}" data-month="${date.month}">${date.month}月</button>
-          </div>
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-next-btn" operator="+" unit="month">
-            <span class="ww-picker-next-icon"></span>
-          </button>
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-super-next-btn" operator="+" unit="year">
-            <span class="ww-picker-super-next-icon"></span>
-          </button>
-        </div>
-      `;
-      },
-      // 两位补0
-      pad: function (text) {
-        return helper.padZero("left", text, 2, "0");
-      },
-      renderCalendarBody(dateStr, previewDate) {
-        var date = { year: "", month: "", day: "", week: "" };
-        if (dateStr) {
-          date = {
-            year: +dateStr.slice(0, 4),
-            month: +dateStr.slice(4, 6),
-            day: +dateStr.slice(-2),
-            week: dateUtil.getWeek(dateStr),
-          };
-        }
-
-        var _previewDate =
-          previewDate.year + "" + this.pad(previewDate.month) + "01";
-        var curMonthFirstWeek = dateUtil.getWeek(_previewDate); // 当前月1号是周几
-        var curMonthDays = dateUtil.getMonthDays(_previewDate); // 当前月有多少天
-        var prevMonthLastDay = dateUtil.lastMonthDay(_previewDate); // 上一个月最后一天是几号
-
-        var prevMonth = dateUtil.getPrevMonth(_previewDate);
-        var nextMonth = dateUtil.getNextMonth(_previewDate);
-
-        var todayTime = dateUtil.today();
-        var isToday =
-          todayTime.year === previewDate.year &&
-          todayTime.month === previewDate.month;
-        var isCur =
-          date.year === previewDate.year && date.month === previewDate.month;
-
-        var dayList = [];
-        for (var i = 1; i <= 42; i++) {
-          var index = ~~((i - 1) / 7);
-          if (!dayList[index]) {
-            dayList[index] = [];
-          }
-
-          var day = "",
-            text = "",
-            curMonth = false,
-            today = false,
-            sel = false,
-            isLast = false,
-            isFirst = false;
-          if (i < curMonthFirstWeek) {
-            // 补上个月
-            text = prevMonthLastDay - (curMonthFirstWeek - i) + 1;
-            isLast = prevMonthLastDay === text;
-            day = prevMonth.year + this.pad(prevMonth.month) + this.pad(text);
-          } else {
-            if (i >= curMonthFirstWeek + curMonthDays) {
-              // 补下个月
-              text = i - (curMonthFirstWeek + curMonthDays) + 1;
-              isFirst = text === 1;
-              day = nextMonth.year + this.pad(nextMonth.month) + this.pad(text);
-            } else {
-              text = i - curMonthFirstWeek + 1;
-              isFirst = text === 1;
-              isLast = text === curMonthDays;
-              day =
-                previewDate.year +
-                "" +
-                this.pad(previewDate.month) +
-                "" +
-                this.pad(text);
-              curMonth = true;
-              today = isToday && text === todayTime.day;
-              sel = isCur && text === date.day;
-            }
-          }
-
-          dayList[index].push({
-            day: day, // 2050-01-01
-            text: text, // 页面展示的 “号” 数字
-            curMonth: curMonth, // 是否是当前月
-            today: today, // 是否是今天
-            sel: sel, // 是否选中
-            isLast: isLast, // 最后一天
-            isFirst: isFirst, // 第一天
-          });
-        }
-
-        return `
-        <div class="ww-picker-body">
-          <table class="ww-picker-content">
-            <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
-            <tbody>
-            ${dayList
-              .map(function (v) {
-                var html = "<tr>";
-                html = v
-                  .map(function (cell) {
-                    var classText = "ww-picker-cell";
-                    if (cell.isFirst) {
-                      classText += " ww-picker-cell-start";
-                    }
-                    if (cell.isLast) {
-                      classText += " ww-picker-cell-end";
-                    }
-                    if (cell.curMonth) {
-                      classText += " ww-picker-cell-in-view";
-                    }
-                    if (cell.today) {
-                      classText += " ww-picker-cell-today";
-                    }
-
-                    if (cell.sel) {
-                      classText += " ww-picker-cell-selected";
-                    }
-                    return `
-                <td title="${cell.day}" class="${classText}"><div class="ww-picker-cell-inner">${cell.text}</div></td>
-                `;
-                  })
-                  .join("");
-                html += "</tr>";
-                return html;
-              })
-              .join("")}
-            </tbody>
-          </table>
-        </div>
-      `;
-      },
-
-      /**
-       * @param {*} dateStr 当前选中的日期
-       * @param {*} previewDate 头部年月
-       */
-      renderCalendarContent: function (date, previewDate) {
-        return `
-      ${this.renderCalendarHeader(previewDate)}
-      ${this.renderCalendarBody(date, previewDate)}
-      `;
-      },
-
-      renderPanelDate(value, previewDate) {
-        var quicks = this.options.quicks;
-        return `<div class="ww-picker-date-panel">
-          ${this.renderCalendarContent(value, previewDate)}
-        </div>
-        <div class="ww-picker-footer ${
-          quicks.length ? "ww-picker-footer-space-between" : ""
-        }">
-          <a class="ww-picker-today-btn">今天</a>
-          ${quicks.map(
-            (v, i) =>
-              `<a class="ww-picker-quick-btn" data-index="${i}">${v.name}</a>`
-          )}
-        </div>`;
-      },
+    var commonDom = {
       renderPanelYear(year) {
         var startYear = year - (year % 10);
         var endYear = startYear + 9;
@@ -595,6 +334,270 @@ $(
       </div>
     </div>`;
       },
+    };
+
+    // 日期选择器
+    function DatePicker(options) {
+      this.options = {
+        container: null, // 容器
+        format: "YYYY-MM-DD", // 展示格式
+        inputFormat: "YYYYMMDD", // 输出格式
+        value: "", // 默认值
+        width: "", // 宽度
+        style: "",
+        quicks: [], // 快捷选择
+        disabled: false, // 是否禁用
+        change: function () {},
+      };
+
+      this.options = $.extend({}, this.options, options);
+      this.value = dateUtil.formatTime("YYYYMMDD", this.options.value || "");
+      (this.displayValue = this.setDisplayValue(this.value)), // 日历显示月份用的 格式：{year: number, month: number}
+        (this.calendar = null);
+      this.weekText = ["日", "一", "二", "三", "四", "五", "六"];
+      this.datePickerWidth = 245;
+      this.show = false;
+      /**
+       * showType类型有以下五种
+       *
+       * date  正常选择日期
+       * year   年份选择
+       * manyYear 更多年份选择
+       * month 月份选择
+       * quick  快捷选择
+       */
+      this.showType = "date";
+      this.init();
+    }
+
+    DatePicker.prototype = {
+      init: function () {
+        // 初始化
+        this.initElement(); // 初始化元素
+        this.bindEvent(); // 绑定事件
+      },
+
+      setDisplayValue(val) {
+        let displayValue = {};
+        if (val) {
+          displayValue = {
+            year: +val.slice(0, 4),
+            month: +val.slice(4, 6),
+          };
+        } else {
+          var curMonth = dateUtil.today();
+          displayValue = curMonth;
+        }
+        return displayValue;
+      },
+      renderCalendarIcon: function () {
+        return `<span class="ww-picker-suffix"><span role="img" aria-label="calendar" class="anticon">
+  <svg viewBox="64 64 896 896" focusable="false" data-icon="calendar" width="1em" height="1em" fill="currentColor" aria-hidden="true">
+  <path d="M880 184H712v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H384v-64c0-4.4-3.6-8-8-8h-56c-4.4 0-8 3.6-8 8v64H144c-17.7 0-32 14.3-32 32v664c0 17.7 14.3 32 32 32h736c17.7 0 32-14.3 32-32V216c0-17.7-14.3-32-32-32zm-40 656H184V460h656v380zM184 392V256h128v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h256v48c0 4.4 3.6 8 8 8h56c4.4 0 8-3.6 8-8v-48h128v136H184z"></path></svg>
+  </span></span>`;
+      },
+      renderCloseIcon: function () {
+        return `<span class="ww-picker-clear" role="button"><span role="img" aria-label="close-circle" class="anticon">
+  <svg viewBox="64 64 896 896" focusable="false" data-icon="close-circle" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm165.4 618.2l-66-.3L512 563.4l-99.3 118.4-66.1.3c-4.4 0-8-3.5-8-8 0-1.9.7-3.7 1.9-5.2l130.1-155L340.5 359a8.32 8.32 0 01-1.9-5.2c0-4.4 3.6-8 8-8l66.1.3L512 464.6l99.3-118.4 66-.3c4.4 0 8 3.5 8 8 0 1.9-.7 3.7-1.9 5.2L553.5 514l130 155c1.2 1.5 1.9 3.3 1.9 5.2 0 4.4-3.6 8-8 8z"></path></svg>
+  </span></span>`;
+      },
+      initElement: function () {
+        // 初始化元素
+        this.options.container.addClass("ww-datepicker-hidden-accessible");
+        var style = "";
+        if (/^\d+$/.test(this.options.width)) {
+          style = "width: " + this.options.width + "px;";
+        }
+        if (this.options.style) {
+          style += this.options.style;
+        }
+        this.options.container.after(`<div class="ww-picker" style="${style}">
+    <div class="ww-picker-input">
+      <input placeholder="请选择日期" size="12" autocomplete="off" value="${dateUtil.formatTime(
+        this.options.format,
+        this.value
+      )}">
+      ${this.renderCalendarIcon()}
+      ${this.value ? this.renderCloseIcon() : ""}
+    </div>
+  </div>`);
+
+        this.inputElement = this.options.container.next();
+      },
+
+      renderCalendarHeader(date) {
+        return `
+    <div class="ww-picker-header" data-year="${date.year}" data-month="${date.month}">
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-super-prev-btn" operator="-" unit="year">
+        <span class="ww-picker-super-prev-icon"></span>
+      </button>
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-prev-btn" operator="-" unit="month">
+        <span class="ww-picker-prev-icon"></span>
+      </button>
+      <div class="ww-picker-header-view">
+        <button type="button" tabindex="-1" class="ww-picker-year-btn" data-year="${date.year}">${date.year}年</button>
+        <button type="button" tabindex="-1" class="ww-picker-month-btn" data-year="${date.year}" data-month="${date.month}">${date.month}月</button>
+      </div>
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-next-btn" operator="+" unit="month">
+        <span class="ww-picker-next-icon"></span>
+      </button>
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-super-next-btn" operator="+" unit="year">
+        <span class="ww-picker-super-next-icon"></span>
+      </button>
+    </div>
+  `;
+      },
+      // 两位补0
+      pad: function (text) {
+        return helper.padZero("left", text, 2, "0");
+      },
+      renderCalendarBody(dateStr, previewDate) {
+        var date = { year: "", month: "", day: "", week: "" };
+        if (dateStr) {
+          date = {
+            year: +dateStr.slice(0, 4),
+            month: +dateStr.slice(4, 6),
+            day: +dateStr.slice(-2),
+            week: dateUtil.getWeek(dateStr),
+          };
+        }
+
+        var _previewDate =
+          previewDate.year + "" + this.pad(previewDate.month) + "01";
+        var curMonthFirstWeek = dateUtil.getWeek(_previewDate); // 当前月1号是周几
+        var curMonthDays = dateUtil.getMonthDays(_previewDate); // 当前月有多少天
+        var prevMonthLastDay = dateUtil.lastMonthDay(_previewDate); // 上一个月最后一天是几号
+
+        var prevMonth = dateUtil.getPrevMonth(_previewDate);
+        var nextMonth = dateUtil.getNextMonth(_previewDate);
+
+        var todayTime = dateUtil.today();
+        var isToday =
+          todayTime.year === previewDate.year &&
+          todayTime.month === previewDate.month;
+        var isCur =
+          date.year === previewDate.year && date.month === previewDate.month;
+
+        var dayList = [];
+        for (var i = 1; i <= 42; i++) {
+          var index = ~~((i - 1) / 7);
+          if (!dayList[index]) {
+            dayList[index] = [];
+          }
+
+          var day = "",
+            text = "",
+            curMonth = false,
+            today = false,
+            sel = false,
+            isLast = false,
+            isFirst = false;
+          if (i < curMonthFirstWeek) {
+            // 补上个月
+            text = prevMonthLastDay - (curMonthFirstWeek - i) + 1;
+            isLast = prevMonthLastDay === text;
+            day = prevMonth.year + this.pad(prevMonth.month) + this.pad(text);
+          } else {
+            if (i >= curMonthFirstWeek + curMonthDays) {
+              // 补下个月
+              text = i - (curMonthFirstWeek + curMonthDays) + 1;
+              isFirst = text === 1;
+              day = nextMonth.year + this.pad(nextMonth.month) + this.pad(text);
+            } else {
+              text = i - curMonthFirstWeek + 1;
+              isFirst = text === 1;
+              isLast = text === curMonthDays;
+              day =
+                previewDate.year +
+                "" +
+                this.pad(previewDate.month) +
+                "" +
+                this.pad(text);
+              curMonth = true;
+              today = isToday && text === todayTime.day;
+              sel = isCur && text === date.day;
+            }
+          }
+
+          dayList[index].push({
+            day: day, // 2050-01-01
+            text: text, // 页面展示的 “号” 数字
+            curMonth: curMonth, // 是否是当前月
+            today: today, // 是否是今天
+            sel: sel, // 是否选中
+            isLast: isLast, // 最后一天
+            isFirst: isFirst, // 第一天
+          });
+        }
+
+        return `
+    <div class="ww-picker-body">
+      <table class="ww-picker-content">
+        <thead><tr><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+        <tbody>
+        ${dayList
+          .map(function (v) {
+            var html = "<tr>";
+            html = v
+              .map(function (cell) {
+                var classText = "ww-picker-cell";
+                if (cell.isFirst) {
+                  classText += " ww-picker-cell-start";
+                }
+                if (cell.isLast) {
+                  classText += " ww-picker-cell-end";
+                }
+                if (cell.curMonth) {
+                  classText += " ww-picker-cell-in-view";
+                }
+                if (cell.today) {
+                  classText += " ww-picker-cell-today";
+                }
+
+                if (cell.sel) {
+                  classText += " ww-picker-cell-selected";
+                }
+                return `
+            <td title="${cell.day}" class="${classText}"><div class="ww-picker-cell-inner">${cell.text}</div></td>
+            `;
+              })
+              .join("");
+            html += "</tr>";
+            return html;
+          })
+          .join("")}
+        </tbody>
+      </table>
+    </div>
+  `;
+      },
+
+      /**
+       * @param {*} dateStr 当前选中的日期
+       * @param {*} previewDate 头部年月
+       */
+      renderCalendarContent: function (date, previewDate) {
+        return `
+  ${this.renderCalendarHeader(previewDate)}
+  ${this.renderCalendarBody(date, previewDate)}
+  `;
+      },
+
+      renderPanelDate(value, previewDate) {
+        var quicks = this.options.quicks;
+        return `<div class="ww-picker-date-panel">
+      ${this.renderCalendarContent(value, previewDate)}
+    </div>
+    <div class="ww-picker-footer ${
+      quicks.length ? "ww-picker-footer-space-between" : ""
+    }">
+      <a class="ww-picker-today-btn">今天</a>
+      ${quicks.map(
+        (v, i) =>
+          `<a class="ww-picker-quick-btn" data-index="${i}">${v.name}</a>`
+      )}
+    </div>`;
+      },
       renderPanelQuick(data) {
         var list = data.list || [];
         var lists = [];
@@ -608,40 +611,39 @@ $(
         }
 
         return `<div class="ww-picker-quick-panel">
-        <div class="ww-picker-header">
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-prev-btn" >
-            <span class="ww-picker-prev-icon"></span>
-          </button>
-          <div class="ww-picker-header-view">${data.name}</div>
-          <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-next-btn" style="opacity: 0">
-            <span class="ww-picker-next-icon"></span>
-          </button>
-        </div>
-        <div class="ww-picker-body">
-          <table class="ww-picker-content">
-            <tbody>
-              ${lists
-                .map((v) => {
-                  return `<tr>
-                  ${v
-                    .map((item) => {
-                      var classText = "";
-                      if (
-                        dateUtil.formatTime("YYYYMMDD", item + "") ===
-                        this.value
-                      ) {
-                        classText = "ww-picker-cell-selected";
-                      }
-                      return `<td title="${item}" data-val="${item}" class="ww-picker-cell ww-picker-cell-in-view ${classText}"><div class="ww-picker-cell-inner">${item}</div></td>`;
-                    })
-                    .join("")}
-                </tr>`;
+    <div class="ww-picker-header">
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-prev-btn" >
+        <span class="ww-picker-prev-icon"></span>
+      </button>
+      <div class="ww-picker-header-view">${data.name}</div>
+      <button type="button" tabindex="-1" class="ww-picker-operator ww-picker-header-next-btn" style="opacity: 0">
+        <span class="ww-picker-next-icon"></span>
+      </button>
+    </div>
+    <div class="ww-picker-body">
+      <table class="ww-picker-content">
+        <tbody>
+          ${lists
+            .map((v) => {
+              return `<tr>
+              ${v
+                .map((item) => {
+                  var classText = "";
+                  if (
+                    dateUtil.formatTime("YYYYMMDD", item + "") === this.value
+                  ) {
+                    classText = "ww-picker-cell-selected";
+                  }
+                  return `<td title="${item}" data-val="${item}" class="ww-picker-cell ww-picker-cell-in-view ${classText}"><div class="ww-picker-cell-inner">${item}</div></td>`;
                 })
                 .join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>`;
+            </tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
       },
 
       renderCalendar: function (pos) {
@@ -652,12 +654,12 @@ $(
           );
           $("body").append(this.calendar);
           this.calendar.html(`<div>
-          <div class="ww-picker-dropdown" style="left: ${pos.x}px; top: ${pos.y}px;">
-            <div class="ww-picker-panel-container">
-              <div class="ww-picker-panel"></div>
-            </div>
-          </div>
-        </div>`);
+      <div class="ww-picker-dropdown" style="left: ${pos.x}px; top: ${pos.y}px;">
+        <div class="ww-picker-panel-container">
+          <div class="ww-picker-panel"></div>
+        </div>
+      </div>
+    </div>`);
           this.bindCalendarEvent(); // 绑定弹框 元素事件
           this.calendar
             .find(".ww-picker-panel")
@@ -874,7 +876,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelMonth(year));
+              .html(commonDom.renderPanelMonth(year));
           }
         );
         // 月份界面 - 分页
@@ -886,7 +888,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelMonth(year));
+              .html(commonDom.renderPanelMonth(year));
           }
         );
         // 月份选择
@@ -911,7 +913,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelYear(year));
+              .html(commonDom.renderPanelYear(year));
           }
         );
         // 切换到年份界面
@@ -924,7 +926,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelYear(year));
+              .html(commonDom.renderPanelYear(year));
           }
         );
         // 年份界面 - 分页
@@ -936,7 +938,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelYear(year));
+              .html(commonDom.renderPanelYear(year));
           }
         );
         // 选择年份
@@ -962,7 +964,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelManyYear(year));
+              .html(commonDom.renderPanelManyYear(year));
           }
         );
         // 多选年份界面 - 分页
@@ -974,7 +976,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelManyYear(year));
+              .html(commonDom.renderPanelManyYear(year));
           }
         );
 
@@ -987,7 +989,7 @@ $(
             var year = $(this).data("year");
             that.calendar
               .find(".ww-picker-panel")
-              .html(that.renderPanelYear(year));
+              .html(commonDom.renderPanelYear(year));
           }
         );
 
@@ -1028,7 +1030,6 @@ $(
         );
       },
     };
-
     // 日期范围选择器
     function RangePicker(options) {
       this.options = {
@@ -1058,6 +1059,7 @@ $(
       }
       (this.displayValue = this.setDisplayValue(this.value)), // 日历显示月份用的 格式：[{year: number, month: number}, {year: number, month: number}]
         (this.calendar = null);
+      this.curDisplayValue = null; // 切换年月的时候 保存当前选中的年月
       this.weekText = ["日", "一", "二", "三", "四", "五", "六"];
       this.rangePickerWidth = 488;
       this.show = false;
@@ -1235,12 +1237,12 @@ $(
           <span class="ww-picker-prev-icon"></span>
         </button>
         <div class="ww-picker-header-view">
-          <button type="button" tabindex="-1" class="ww-picker-year-btn">${
+          <button type="button" tabindex="-1" class="ww-picker-year-btn" data-year="${
             date.year
-          }年</button>
-          <button type="button" tabindex="-1" class="ww-picker-month-btn">${
-            date.month
-          }月</button>
+          }">${date.year}年</button>
+          <button type="button" tabindex="-1" class="ww-picker-month-btn" data-year="${
+            date.year
+          }">${date.month}月</button>
         </div>
         <button type="button" tabindex="-1" ${
           disabledAddMonthBtn ? "disabled" : ""
@@ -1389,6 +1391,18 @@ $(
     ${this.renderCalendarBody(position, date, previewDate)}
     `;
       },
+      renderPanelRangeDate() {
+        return `<div tabindex="-1" class="ww-picker-panel">
+        <div class="ww-picker-date-panel ww-picker-left">
+          ${this.renderCalendarContent("left", this.value, this.displayValue)}
+        </div>
+      </div>
+      <div tabindex="-1" class="ww-picker-panel">
+        <div class="ww-picker-date-panel ww-picker-right">
+          ${this.renderCalendarContent("right", this.value, this.displayValue)}
+        </div>
+      </div>`;
+      },
       renderCalendar: function (pos) {
         this.show = true;
         if (!this.calendar) {
@@ -1399,18 +1413,15 @@ $(
           this.calendar.html(`<div>
         <div class="ww-picker-dropdown ww-picker-dropdown-range" style="left: ${pos.x}px; top: ${pos.y}px;">
           <div class="ww-picker-panel-container">
-            <div class="ww-picker-panels">
-              <div tabindex="-1" class="ww-picker-panel">
-                <div class="ww-picker-date-panel ww-picker-left"></div>
-              </div>
-              <div tabindex="-1" class="ww-picker-panel">
-                <div class="ww-picker-date-panel ww-picker-right"></div>
-              </div>
-            </div>
+            <div class="ww-picker-panels"></div>
           </div>
         </div>
       </div>`);
           this.bindCalendarEvent(); // 绑定弹框 元素事件
+
+          this.calendar
+            .find(".ww-picker-panels")
+            .html(this.renderPanelRangeDate());
         } else {
           this.calendar
             .find(".ww-picker-dropdown")
@@ -1418,17 +1429,6 @@ $(
             .css("left", pos.x + "px");
           this.showCalendar();
         }
-
-        this.calendar
-          .find(".ww-picker-date-panel.ww-picker-left")
-          .html(
-            this.renderCalendarContent("left", this.value, this.displayValue)
-          );
-        this.calendar
-          .find(".ww-picker-date-panel.ww-picker-right")
-          .html(
-            this.renderCalendarContent("right", this.value, this.displayValue)
-          );
       },
 
       hasShowCalendar: function () {
@@ -1493,6 +1493,11 @@ $(
         var realElement = this.options.container.get(0);
         realElement.value = val.join(",");
         this.options.change.call(realElement, val);
+
+        this.calendar
+          .find(".ww-picker-panels")
+          .html(this.renderPanelRangeDate());
+
         if (value.length === 2) {
           this.inputElement
             .find(".ww-picker-suffix")
@@ -1563,145 +1568,313 @@ $(
       },
       bindCalendarEvent: function () {
         var that = this;
-        this.calendar.delegate(".ww-picker-cell", "click", function () {
-          var date = $(this).attr("title");
+        this.calendar.delegate(
+          ".ww-picker-date-panel .ww-picker-cell",
+          "click",
+          function () {
+            var date = $(this).attr("title");
 
-          // if($(this).hasClass('ww-picker-cell-in-view')){
-          // }
+            // if($(this).hasClass('ww-picker-cell-in-view')){
+            // }
 
-          if (that.value.length === 0) {
-            $(this)
-              .addClass("ww-picker-cell-range-start")
-              .addClass("ww-picker-cell-range-start-single");
-            that.value = [date];
-          } else if (that.value.length === 1) {
-            var val = that.value[0];
-            var newValue = [];
-            if (+val >= +date) {
-              newValue = [date, val];
-            } else {
-              newValue = [val, date];
-            }
-            that.onchange(newValue);
-            that.hideCalendar();
-          } else {
-            that.calendar
-              .find(".ww-picker-cell")
-              .removeClass("ww-picker-cell-range-start")
-              .removeClass("ww-picker-cell-range-start-single")
-              .removeClass("ww-picker-cell-in-range")
-              .removeClass("ww-picker-cell-range-end");
-
-            $(this)
-              .addClass("ww-picker-cell-range-start")
-              .addClass("ww-picker-cell-range-start-single");
-            that.value = [date];
-          }
-        });
-
-        this.calendar.delegate(".ww-picker-cell", "mouseenter", function () {
-          if (that.value.length === 1) {
-            that.calendar
-              .find(".ww-picker-cell")
-              .removeClass("ww-picker-cell-range-hover")
-              .removeClass("ww-picker-cell-range-hover-start")
-              .removeClass("ww-picker-cell-range-hover-end")
-              .removeClass("ww-picker-cell-range-hover-edge-end")
-              .removeClass("ww-picker-cell-range-hover-edge-start");
-
-            var lastValue = +(that.value[0] || that.value[1]);
-            var val = +$(this).attr("title");
-
-            var rang = [];
-            if (lastValue >= val) {
-              rang = [val, lastValue];
-            } else {
-              rang = [lastValue, val];
-            }
-
-            that.calendar.find(".ww-picker-cell").each(function () {
-              var curVal = +$(this).attr("title");
-              if (curVal === rang[0]) {
-                $(this).addClass("ww-picker-cell-range-hover-start");
-              } else if (curVal === rang[1]) {
-                $(this).addClass("ww-picker-cell-range-hover-end");
-                if ($(this).hasClass("ww-picker-cell-start")) {
-                  $(this).addClass("ww-picker-cell-range-hover-edge-start");
-                }
-              } else if (curVal > rang[0] && curVal < rang[1]) {
-                $(this).addClass("ww-picker-cell-range-hover");
-                if ($(this).hasClass("ww-picker-cell-end")) {
-                  $(this).addClass("ww-picker-cell-range-hover-edge-end");
-                }
-                if ($(this).hasClass("ww-picker-cell-start")) {
-                  $(this).addClass("ww-picker-cell-range-hover-edge-start");
-                }
+            if (that.value.length === 0) {
+              $(this)
+                .addClass("ww-picker-cell-range-start")
+                .addClass("ww-picker-cell-range-start-single");
+              that.value = [date];
+            } else if (that.value.length === 1) {
+              var val = that.value[0];
+              var newValue = [];
+              if (+val >= +date) {
+                newValue = [date, val];
+              } else {
+                newValue = [val, date];
               }
-            });
+              that.onchange(newValue);
+
+              that.hideCalendar();
+            } else {
+              that.calendar
+                .find(".ww-picker-cell")
+                .removeClass("ww-picker-cell-range-start")
+                .removeClass("ww-picker-cell-range-start-single")
+                .removeClass("ww-picker-cell-in-range")
+                .removeClass("ww-picker-cell-range-end");
+
+              $(this)
+                .addClass("ww-picker-cell-range-start")
+                .addClass("ww-picker-cell-range-start-single");
+              that.value = [date];
+            }
           }
-        });
+        );
+
+        this.calendar.delegate(
+          ".ww-picker-date-panel .ww-picker-cell",
+          "mouseenter",
+          function () {
+            if (that.value.length === 1) {
+              that.calendar
+                .find(".ww-picker-cell")
+                .removeClass("ww-picker-cell-range-hover")
+                .removeClass("ww-picker-cell-range-hover-start")
+                .removeClass("ww-picker-cell-range-hover-end")
+                .removeClass("ww-picker-cell-range-hover-edge-end")
+                .removeClass("ww-picker-cell-range-hover-edge-start");
+
+              var lastValue = +(that.value[0] || that.value[1]);
+              var val = +$(this).attr("title");
+
+              var rang = [];
+              if (lastValue >= val) {
+                rang = [val, lastValue];
+              } else {
+                rang = [lastValue, val];
+              }
+
+              that.calendar.find(".ww-picker-cell").each(function () {
+                var curVal = +$(this).attr("title");
+                if (curVal === rang[0]) {
+                  $(this).addClass("ww-picker-cell-range-hover-start");
+                } else if (curVal === rang[1]) {
+                  $(this).addClass("ww-picker-cell-range-hover-end");
+                  if ($(this).hasClass("ww-picker-cell-start")) {
+                    $(this).addClass("ww-picker-cell-range-hover-edge-start");
+                  }
+                } else if (curVal > rang[0] && curVal < rang[1]) {
+                  $(this).addClass("ww-picker-cell-range-hover");
+                  if ($(this).hasClass("ww-picker-cell-end")) {
+                    $(this).addClass("ww-picker-cell-range-hover-edge-end");
+                  }
+                  if ($(this).hasClass("ww-picker-cell-start")) {
+                    $(this).addClass("ww-picker-cell-range-hover-edge-start");
+                  }
+                }
+              });
+            }
+          }
+        );
 
         // 切换年份和月份
-        this.calendar.delegate(".ww-picker-operator", "click", function (e) {
-          e.stopPropagation && e.stopPropagation();
+        this.calendar.delegate(
+          ".ww-picker-date-panel .ww-picker-operator",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
 
-          var position = $(this).parent().attr("data-position");
-          var operator = $(this).attr("operator");
-          var unit = $(this).attr("unit");
+            var position = $(this).parent().attr("data-position");
+            var operator = $(this).attr("operator");
+            var unit = $(this).attr("unit");
 
-          var cur =
-            position === "left" ? that.displayValue[0] : that.displayValue[1];
-          var year = cur.year;
-          var month = cur.month;
+            var cur =
+              position === "left" ? that.displayValue[0] : that.displayValue[1];
+            var year = cur.year;
+            var month = cur.month;
 
-          if (operator === "-") {
-            if (unit === "year") {
-              year--;
+            if (operator === "-") {
+              if (unit === "year") {
+                year--;
+              } else {
+                if (--month <= 0) {
+                  (month = 12), year--;
+                }
+              }
             } else {
-              if (--month <= 0) {
-                (month = 12), year--;
+              if (unit === "year") {
+                year++;
+              } else {
+                if (++month > 12) {
+                  (month = 1), year++;
+                }
               }
             }
-          } else {
-            if (unit === "year") {
-              year++;
+
+            var newVal = {
+              year: year,
+              month: month,
+            };
+
+            var displayValue = [];
+            if (position === "left") {
+              displayValue = [newVal, that.displayValue[1]];
             } else {
-              if (++month > 12) {
-                (month = 1), year++;
-              }
+              displayValue = [that.displayValue[0], newVal];
             }
+
+            that.displayValue = displayValue;
+            that.calendar
+              .find(`.ww-picker-date-panel.ww-picker-${position}`)
+              .html(
+                that.renderCalendarContent(position, that.value, displayValue)
+              );
+
+            var ohterPosition = position === "left" ? "right" : "left";
+            that.calendar
+              .find(`.ww-picker-date-panel.ww-picker-${ohterPosition}`)
+              .html(
+                that.renderCalendarContent(
+                  ohterPosition,
+                  that.value,
+                  displayValue
+                )
+              );
           }
+        );
 
-          var newVal = {
-            year: year,
-            month: month,
-          };
+        // 切换到月份界面
+        this.calendar.delegate(
+          ".ww-picker-date-panel .ww-picker-month-btn",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var position = $(e.target.parentNode.parentNode).data("position");
+            that.curDisplayValue =
+              that.displayValue[position === "left" ? 0 : 1];
 
-          var displayValue = [];
-          if (position === "left") {
-            displayValue = [newVal, that.displayValue[1]];
-          } else {
-            displayValue = [that.displayValue[0], newVal];
+            that.showType = "month";
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelMonth(year));
           }
+        );
+        // 月份界面 - 分页
+        this.calendar.delegate(
+          ".ww-picker-month-panel .ww-picker-operator",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelMonth(year));
+          }
+        );
+        // 月份选择
+        this.calendar.delegate(
+          ".ww-picker-month-panel .ww-picker-cell",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var month = $(this).data("month");
+            var leftDisplayValue = { ...that.curDisplayValue, month };
+            var year = leftDisplayValue.year;
+            if (++month > 12) {
+              (month = 1), year++;
+            }
+            var rightDisplayValue = {
+              year,
+              month,
+            };
 
-          that.displayValue = displayValue;
-          that.calendar
-            .find(`.ww-picker-date-panel.ww-picker-${position}`)
-            .html(
-              that.renderCalendarContent(position, that.value, displayValue)
-            );
+            that.displayValue = [leftDisplayValue, rightDisplayValue];
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(that.renderPanelRangeDate());
+          }
+        );
+        // 月份界面 - 切换到年份界面
+        this.calendar.delegate(
+          ".ww-picker-month-panel .ww-picker-year-btn",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelYear(year));
+          }
+        );
+        // 切换到年份界面
+        this.calendar.delegate(
+          ".ww-picker-date-panel .ww-picker-year-btn",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            that.showType = "year";
+            var year = $(this).data("year");
+            var position = $(e.target.parentNode.parentNode).data("position");
+            that.curDisplayValue =
+              that.displayValue[position === "left" ? 0 : 1];
 
-          var ohterPosition = position === "left" ? "right" : "left";
-          that.calendar
-            .find(`.ww-picker-date-panel.ww-picker-${ohterPosition}`)
-            .html(
-              that.renderCalendarContent(
-                ohterPosition,
-                that.value,
-                displayValue
-              )
-            );
-        });
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelYear(year));
+          }
+        );
+        // 年份界面 - 分页
+        this.calendar.delegate(
+          ".ww-picker-year-panel .ww-picker-operator",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelYear(year));
+          }
+        );
+        // 选择年份
+        this.calendar.delegate(
+          ".ww-picker-year-panel .ww-picker-cell",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            var leftDisplayValue = { ...that.curDisplayValue, year };
+            var month = leftDisplayValue.month;
+            if (++month > 12) {
+              (month = 1), year++;
+            }
+            var rightDisplayValue = {
+              year,
+              month,
+            };
+            that.displayValue = [leftDisplayValue, rightDisplayValue];
+
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(that.renderPanelRangeDate());
+          }
+        );
+        // 年份界面 - 切换到多选年份界面
+        this.calendar.delegate(
+          ".ww-picker-year-panel .ww-picker-year-btn",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            that.showType = "manyYear";
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelManyYear(year));
+          }
+        );
+        // 多选年份界面 - 分页
+        this.calendar.delegate(
+          ".ww-picker-decade-panel .ww-picker-operator",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelManyYear(year));
+          }
+        );
+
+        // 选择多选年份
+        this.calendar.delegate(
+          ".ww-picker-decade-panel .ww-picker-cell",
+          "click",
+          function (e) {
+            e.stopPropagation && e.stopPropagation();
+            var year = $(this).data("year");
+            that.calendar
+              .find(".ww-picker-panels")
+              .html(commonDom.renderPanelYear(year));
+          }
+        );
       },
     };
 
